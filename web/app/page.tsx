@@ -1,5 +1,5 @@
-import DashboardFeature from '@/components/dashboard/dashboard-feature';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return <DashboardFeature />;
+export default function Home() {
+  redirect('/movie-reviews');
 }
