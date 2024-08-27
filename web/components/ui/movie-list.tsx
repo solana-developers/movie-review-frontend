@@ -1,11 +1,11 @@
 import { FC, useState, useEffect } from 'react';
-import * as web3 from '@solana/web3.js';
 import { Card } from './movie-card';
+import { Connection, clusterApiUrl } from '@solana/web3.js';
 import { MovieCoordinator } from '@/coordinator/movieCordinator';
 import { Movie } from '@/models/movie-model';
 export const MovieList: FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const connection = new web3.Connection(web3.clusterApiUrl('devnet'));
+  const connection = new Connection(clusterApiUrl('devnet'));
   const [movies, setMovies] = useState<Movie[]>([]); // Specify the type here
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

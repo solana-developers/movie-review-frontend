@@ -1,5 +1,10 @@
 import { FC, FormEvent, useState } from 'react';
-import * as web3 from '@solana/web3.js';
+import {
+  Transaction,
+  PublicKey,
+  TransactionInstruction,
+  SystemProgram,
+} from '@solana/web3.js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Movie } from '@/models/movie-model';
 import { StarIcon } from '@heroicons/react/24/solid';
@@ -33,37 +38,37 @@ export const Form: FC = () => {
     }
 
     const buffer = movie.serialize();
-    const transaction = new web3.Transaction();
+    const transaction = new Transaction();
 
-    const [pda] = web3.PublicKey.findProgramAddressSync(
+    const [pda] = PublicKey.findProgramAddressSync(
       [publicKey.toBuffer(), Buffer.from(movie.title)],
-      new web3.PublicKey(MOVIE_REVIEW_PROGRAM_ID)
+      new PublicKey(MOVIE_REVIEW_PROGRAM_ID)
     );
 
-    const instruction = new web3.TransactionInstruction({
+    const instruction = new TransactionInstruction({
       keys: [
         { pubkey: publicKey, isSigner: true, isWritable: false },
         { pubkey: pda, isSigner: false, isWritable: true },
         {
-          pubkey: web3.SystemProgram.programId,
+          pubkey: SystemProgram.programId,
           isSigner: false,
           isWritable: false,
         },
       ],
       data: buffer,
-      programId: new web3.PublicKey(MOVIE_REVIEW_PROGRAM_ID),
+      programId: new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
     });
 
     transaction.add(instruction);
 
     try {
-      const txid = await sendTransaction(transaction, connection);
+      const transactionId = await sendTransaction(transaction, connection);
       showTransactionToast({
-        signature: txid,
+        signature: transactionId,
         status: 'success',
       });
       console.log(
-        `Transaction submitted: https://explorer.solana.com/tx/${txid}?cluster=devnet`
+        `Transaction submitted: https://explorer.solana.com/tx/${transactionId}?cluster=devnet`
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

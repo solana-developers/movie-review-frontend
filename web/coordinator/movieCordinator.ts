@@ -1,14 +1,14 @@
-import * as web3 from '@solana/web3.js';
+import { Connection, PublicKey, AccountInfo } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { Movie } from '@/models/movie-model';
 const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
 export class MovieCoordinator {
-  static accounts: web3.PublicKey[] = [];
+  static accounts: PublicKey[] = [];
 
-  static async prefetchAccounts(connection: web3.Connection, search: string) {
+  static async prefetchAccounts(connection: Connection, search: string) {
     const accounts = (await connection.getProgramAccounts(
-      new web3.PublicKey(MOVIE_REVIEW_PROGRAM_ID),
+      new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
       {
         dataSlice: { offset: 2, length: 18 },
         filters:
@@ -24,8 +24,8 @@ export class MovieCoordinator {
               ],
       }
     )) as Array<{
-      pubkey: web3.PublicKey;
-      account: web3.AccountInfo<Buffer>;
+      pubkey: PublicKey;
+      account: AccountInfo<Buffer>;
     }>; // Explicitly define the expected structure
 
     accounts.sort((a, b) => {
@@ -55,7 +55,7 @@ export class MovieCoordinator {
   }
 
   static async fetchPage(
-    connection: web3.Connection,
+    connection: Connection,
     page: number,
     perPage: number,
     search: string,
