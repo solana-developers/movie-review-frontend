@@ -2,6 +2,8 @@ import { FC, FormEvent, useState } from 'react';
 import * as web3 from '@solana/web3.js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Movie } from '@/models/movie-model';
+import { StarIcon } from '@heroicons/react/24/solid';
+
 import { useFormTransactionToast } from './ui-layout';
 const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
@@ -18,6 +20,10 @@ export const Form: FC = () => {
     event.preventDefault();
     const movie = new Movie(title, rating, description);
     handleTransactionSubmit(movie);
+  };
+
+  const handleStarClick = (starValue: number) => {
+    setRating(starValue);
   };
 
   const handleTransactionSubmit = async (movie: Movie) => {
@@ -96,18 +102,23 @@ export const Form: FC = () => {
         />
       </div>
       <div className="mb-4">
-        <label className="block text-gray-400 mb-2" htmlFor="rating">
-          Rating
+        <label
+          className="block text-center text-gray-400 mb-2"
+          htmlFor="rating"
+        >
+          Select Rating
         </label>
-        <input
-          type="number"
-          id="rating"
-          className="w-[400px] p-2 bg-gray-700 border border-gray-600 rounded"
-          value={rating}
-          onChange={(e) => setRating(parseInt(e.target.value))}
-          min={1}
-          max={5}
-        />
+        <div className="flex  space-x-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <StarIcon
+              key={star}
+              className={`h-8 w-8 cursor-pointer ${
+                star <= rating ? 'text-yellow-400' : 'text-gray-500'
+              }`}
+              onClick={() => handleStarClick(star)}
+            />
+          ))}
+        </div>
       </div>
       <button
         type="submit"
