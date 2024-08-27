@@ -41,13 +41,6 @@ export class Movie {
     borsh.str('description'),
   ]);
 
-  static borshAccountSchema = borsh.struct([
-    borsh.bool('initialized'),
-    borsh.u8('rating'),
-    borsh.str('title'),
-    borsh.str('description'),
-  ]);
-
   serialize(): Buffer {
     try {
       const buffer = Buffer.alloc(1000); // Adjust size if needed
@@ -56,23 +49,6 @@ export class Movie {
     } catch (e) {
       console.error('Serialization error:', e);
       return Buffer.alloc(0);
-    }
-  }
-
-  static deserialize(buffer?: Buffer): Movie | null {
-    if (!buffer) {
-      return null;
-    }
-
-    try {
-      const { title, rating, description } =
-        this.borshAccountSchema.decode(buffer);
-      return new Movie(title, rating, description);
-    } catch (error) {
-      console.error('Deserialization error:', error);
-      console.error('Buffer length:', buffer.length);
-      console.error('Buffer data:', buffer.toString('hex')); // Log the raw buffer data
-      return null;
     }
   }
 }
