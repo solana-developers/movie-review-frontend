@@ -1,25 +1,13 @@
 import { FC, FormEvent, useState } from 'react';
-import {
-  Transaction,
-  PublicKey,
-  TransactionInstruction,
-  SystemProgram,
-} from '@solana/web3.js';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Movie } from '@/models/movie-model';
 import { StarIcon } from '@heroicons/react/24/solid';
 
-import { useFormTransactionToast } from './ui-layout';
 const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
 export const Form: FC = () => {
   const [title, setTitle] = useState('');
   const [rating, setRating] = useState(0);
   const [description, setDescription] = useState('');
-  const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
-
-  const showTransactionToast = useFormTransactionToast();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,51 +20,7 @@ export const Form: FC = () => {
   };
 
   const handleTransactionSubmit = async (movie: Movie) => {
-    if (!publicKey) {
-      console.log('Please connect your wallet to submit a review.');
-      return;
-    }
-
-    const buffer = movie.serialize();
-    const transaction = new Transaction();
-
-    const [pda] = PublicKey.findProgramAddressSync(
-      [publicKey.toBuffer(), Buffer.from(movie.title)],
-      new PublicKey(MOVIE_REVIEW_PROGRAM_ID)
-    );
-
-    const instruction = new TransactionInstruction({
-      keys: [
-        { pubkey: publicKey, isSigner: true, isWritable: false },
-        { pubkey: pda, isSigner: false, isWritable: true },
-        {
-          pubkey: SystemProgram.programId,
-          isSigner: false,
-          isWritable: false,
-        },
-      ],
-      data: buffer,
-      programId: new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
-    });
-
-    transaction.add(instruction);
-
-    try {
-      const transactionId = await sendTransaction(transaction, connection);
-      showTransactionToast({
-        signature: transactionId,
-        status: 'success',
-      });
-      console.log(
-        `Transaction submitted: https://explorer.solana.com/tx/${transactionId}?cluster=devnet`
-      );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      showTransactionToast({
-        status: 'failure',
-        errorMessage: error.message,
-      });
-    }
+    console.log(JSON.stringify(movie));
   };
 
   return (
