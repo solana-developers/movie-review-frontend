@@ -78,16 +78,16 @@ export class MovieCoordinator {
       paginatedPublicKeys
     );
 
-    const movies = accounts.reduce((accum: Movie[], account) => {
+    const movies = accounts.reduce((accumulator: Movie[], account) => {
       try {
         const movie = Movie.deserialize(account?.data);
         if (movie) {
-          accum.push(movie);
+          accumulator.push(movie);
         }
       } catch (error) {
         console.error('Error deserializing movie data: ', error);
       }
-      return accum;
+      return accumulator;
     }, []);
 
     return movies;
