@@ -3,7 +3,7 @@
 import { MovieList } from '../ui/movie-list';
 import { Form } from '../ui/review-form';
 
-export default function DashboardFeature() {
+export default function MovieReviewFeature() {
   return (
     <div className="h-full">
       <div className="w-full items-center flex flex-col  px-4 mt-8">

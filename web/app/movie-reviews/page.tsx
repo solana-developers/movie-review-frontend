@@ -1,5 +1,4 @@
-import DashboardFeature from '@/components/dashboard/dashboard-feature';
-
+import MovieReviewFeature from '@/components/movie-review/movie-review-feature';
 export default function Page() {
-  return <DashboardFeature />;
+  return <MovieReviewFeature />;
 }
