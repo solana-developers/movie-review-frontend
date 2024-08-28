@@ -2,8 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { Card } from './movie-card';
 import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
 import { Movie } from '@/models/movie-model';
-
-const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
+import { MOVIE_REVIEW_PROGRAM_ID } from './review-form';
 
 export const MovieList: FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
