@@ -3,6 +3,7 @@ import { Card } from './movie-card';
 import { Connection, clusterApiUrl } from '@solana/web3.js';
 import { MovieCoordinator } from '@/coordinator/movieCordinator';
 import { Movie } from '@/models/movie-model';
+
 export const MovieList: FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const connection = new Connection(clusterApiUrl('devnet'));
