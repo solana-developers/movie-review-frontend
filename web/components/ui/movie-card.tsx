@@ -15,7 +15,9 @@ export const Card: FC<CardProps> = ({ movie }) => {
   return (
     <div className="p-4 w-[500px] border border-gray-700 rounded-lg m-2 bg-gray-900 text-white">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">{movie.title}</h2>
+        <h2 className="text-xl font-bold">
+          {movie.title.length ? movie.title : 'no title'}
+        </h2>
         <div className="flex items-center">
           {/* Render stars based on the rating */}
           {[...Array(5)].map((_, index) => (
@@ -28,7 +30,9 @@ export const Card: FC<CardProps> = ({ movie }) => {
           ))}
         </div>
       </div>
-      <p className="text-gray-400 mt-2">{movie.description}</p>
+      <p className="text-gray-400 mt-2">
+        {movie.description.length ? movie.description : 'no description'}
+      </p>
     </div>
   );
 };
