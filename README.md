@@ -1,6 +1,8 @@
 # movie-review-dapp
 
-This project is generated with the [create-solana-dapp](https://github.com/solana-developers/create-solana-dapp) generator.
+A frontend web3 dApp for the Movie Review program used in the Solana Course.
+
+This project is generated with the [create-solana-dapp](https://github.com/solana-developers/create-solana-dapp) generator. 
 
 ## Getting Started
 
