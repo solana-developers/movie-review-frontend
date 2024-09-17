@@ -15,7 +15,7 @@ const DATA_OFFSET = 2;
 const DATA_LENGTH = 18;
 
 export class MovieCoordinator {
-  static accounts: PublicKey[] = [];
+  static accounts: Array<PublicKey> = [];
 
   static async prefetchAccounts(connection: Connection, search: string) {
     // Get readonly accounts response
@@ -38,7 +38,7 @@ export class MovieCoordinator {
     );
 
     // Make a mutable copy of the readonly array
-    const accounts: ProgramAccount[] = Array.from(readonlyAccounts);
+    const accounts: Array<ProgramAccount> = Array.from(readonlyAccounts);
 
     accounts.sort((a, b) => {
       try {
@@ -75,7 +75,7 @@ export class MovieCoordinator {
     perPage: number,
     search: string,
     reload = false
-  ): Promise<Movie[]> {
+  ): Promise<Array<Movie>> {
     if (this.accounts.length === 0 || reload) {
       await this.prefetchAccounts(connection, search);
     }
@@ -93,7 +93,7 @@ export class MovieCoordinator {
       paginatedPublicKeys
     );
 
-    const movies = accounts.reduce((accumulator: Movie[], account) => {
+    const movies = accounts.reduce((accumulator: Array<Movie>, account) => {
       try {
         if (account?.data) {
           const movie = Movie.deserialize(account.data);
