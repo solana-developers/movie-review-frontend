@@ -2,17 +2,27 @@ import { Connection, PublicKey, AccountInfo } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { Movie } from '@/models/movie-model';
 
+// Use the correct account type as returned by getProgramAccounts()
+type ProgramAccount = {
+  pubkey: PublicKey;
+  account: AccountInfo<Buffer>;
+};
+
 export const MOVIE_REVIEW_PROGRAM_ID =
   'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
+
+const DATA_OFFSET = 2;
+const DATA_LENGTH = 18;
 
 export class MovieCoordinator {
   static accounts: PublicKey[] = [];
 
   static async prefetchAccounts(connection: Connection, search: string) {
-    const accounts = (await connection.getProgramAccounts(
+    // Get readonly accounts response
+    const readonlyAccounts = await connection.getProgramAccounts(
       new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
       {
-        dataSlice: { offset: 2, length: 18 },
+        dataSlice: { offset: DATA_OFFSET, length: DATA_LENGTH },
         filters:
           search === ''
             ? []
@@ -25,14 +35,17 @@ export class MovieCoordinator {
                 },
               ],
       }
-    )) as Array<{
-      pubkey: PublicKey;
-      account: AccountInfo<Buffer>;
-    }>;
+    );
+
+    // Make a mutable copy of the readonly array
+    const accounts: ProgramAccount[] = Array.from(readonlyAccounts);
 
     accounts.sort((a, b) => {
       try {
-        // Check if buffers are long enough to avoid out-of-bounds access
+        if (!a.account.data || !b.account.data) {
+          throw new Error('Account data is undefined');
+        }
+
         const lengthA = a.account.data.readUInt32LE(0);
         const lengthB = b.account.data.readUInt32LE(0);
 
@@ -40,13 +53,13 @@ export class MovieCoordinator {
           a.account.data.length < 4 + lengthA ||
           b.account.data.length < 4 + lengthB
         ) {
-          throw new Error('Buffer length is insufficient');
+          return 0; // Skip sorting if data length is insufficient
         }
 
         const dataA = a.account.data.subarray(4, 4 + lengthA);
         const dataB = b.account.data.subarray(4, 4 + lengthB);
 
-        return dataA.compare(dataB);
+        return Buffer.compare(dataA, dataB);
       } catch (error) {
         console.error('Error sorting accounts: ', error);
         return 0; // Default sort order in case of error
@@ -82,9 +95,11 @@ export class MovieCoordinator {
 
     const movies = accounts.reduce((accumulator: Movie[], account) => {
       try {
-        const movie = Movie.deserialize(account?.data);
-        if (movie) {
-          accumulator.push(movie);
+        if (account?.data) {
+          const movie = Movie.deserialize(account.data);
+          if (movie) {
+            accumulator.push(movie);
+          }
         }
       } catch (error) {
         console.error('Error deserializing movie data: ', error);
