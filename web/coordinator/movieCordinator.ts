@@ -11,62 +11,76 @@ type ProgramAccount = {
 export const MOVIE_REVIEW_PROGRAM_ID =
   'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
-const DATA_OFFSET = 2;
-const DATA_LENGTH = 18;
+const DATA_OFFSET = 2; // Skip the first 2 bytes, which store versioning information for the data schema of the account. This versioning ensures that changes to the account's structure can be tracked and managed over time.
+const DATA_LENGTH = 18; // Retrieve 18 bytes of data, including the part of the account's data that stores the user's public key for comparison.
 
 export class MovieCoordinator {
   static accounts: Array<PublicKey> = [];
 
   static async prefetchAccounts(connection: Connection, search: string) {
-    // Get readonly accounts response
-    const readonlyAccounts = await connection.getProgramAccounts(
-      new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
-      {
-        dataSlice: { offset: DATA_OFFSET, length: DATA_LENGTH },
-        filters:
-          search === ''
-            ? []
-            : [
-                {
-                  memcmp: {
-                    offset: 6,
-                    bytes: bs58.encode(Buffer.from(search)),
+    try {
+      // Get readonly accounts response
+      const readonlyAccounts = await connection.getProgramAccounts(
+        new PublicKey(MOVIE_REVIEW_PROGRAM_ID),
+        {
+          dataSlice: { offset: DATA_OFFSET, length: DATA_LENGTH },
+          filters:
+            search === ''
+              ? []
+              : [
+                  {
+                    memcmp: {
+                      offset: 6,
+                      bytes: bs58.encode(Buffer.from(search)), // Convert the search string to Base58 for comparison with the on-chain data.
+                    },
                   },
-                },
-              ],
-      }
-    );
-
-    // Make a mutable copy of the readonly array
-    const accounts: Array<ProgramAccount> = Array.from(readonlyAccounts);
-
-    accounts.sort((a, b) => {
-      try {
-        if (!a.account.data || !b.account.data) {
-          throw new Error('Account data is undefined');
+                ],
         }
+      );
 
-        const lengthA = a.account.data.readUInt32LE(0);
-        const lengthB = b.account.data.readUInt32LE(0);
+      // Make a mutable copy of the readonly array
+      const accounts: Array<ProgramAccount> = Array.from(readonlyAccounts);
 
-        if (
-          a.account.data.length < 4 + lengthA ||
-          b.account.data.length < 4 + lengthB
-        ) {
-          return 0; // Skip sorting if data length is insufficient
+      // Define a constant for the size of the header in each account buffer
+      const HEADER_SIZE = 4; // 4 bytes for length header
+
+      accounts.sort((a, b) => {
+        try {
+          if (!a.account.data || !b.account.data) {
+            throw new Error('Account data is undefined');
+          }
+
+          // Check if buffers are long enough to avoid out-of-bounds access
+          const lengthA = a.account.data.readUInt32LE(0);
+          const lengthB = b.account.data.readUInt32LE(0);
+
+          if (
+            a.account.data.length < HEADER_SIZE + lengthA ||
+            b.account.data.length < HEADER_SIZE + lengthB
+          ) {
+            throw new Error('Buffer length is insufficient');
+          }
+
+          const dataA = a.account.data.subarray(
+            HEADER_SIZE,
+            HEADER_SIZE + lengthA
+          );
+          const dataB = b.account.data.subarray(
+            HEADER_SIZE,
+            HEADER_SIZE + lengthB
+          );
+
+          return Buffer.compare(dataA, dataB);
+        } catch (error) {
+          console.error('Error sorting accounts: ', error);
+          return 0;
         }
+      });
 
-        const dataA = a.account.data.subarray(4, 4 + lengthA);
-        const dataB = b.account.data.subarray(4, 4 + lengthB);
-
-        return Buffer.compare(dataA, dataB);
-      } catch (error) {
-        console.error('Error sorting accounts: ', error);
-        return 0; // Default sort order in case of error
-      }
-    });
-
-    this.accounts = accounts.map((account) => account.pubkey);
+      this.accounts = accounts.map((account) => account.pubkey);
+    } catch (error) {
+      console.error('Error prefetching accounts:', error);
+    }
   }
 
   static async fetchPage(
