@@ -28,7 +28,7 @@ export class MovieCoordinator {
     )) as Array<{
       pubkey: PublicKey;
       account: AccountInfo<Buffer>;
-    }>; // Explicitly define the expected structure
+    }>;
 
     accounts.sort((a, b) => {
       try {
